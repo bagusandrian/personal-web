@@ -3,9 +3,9 @@ package tax
 import (
 	"log"
 
-	cRouter "github.com/bagusandrian/mini-api/src/common/router"
-	"github.com/bagusandrian/mini-api/src/config"
-	"github.com/bagusandrian/mini-api/src/db"
+	cRouter "github.com/bagusandrian/web-personal/src/common/router"
+	"github.com/bagusandrian/web-personal/src/config"
+	"github.com/bagusandrian/web-personal/src/db"
 	"github.com/jmoiron/sqlx"
 	jsoniter "github.com/json-iterator/go"
 )
@@ -45,7 +45,7 @@ func NewModule(c *config.Config) *Module {
 func RegisterRoutes(r *cRouter.MyRouter, mdle *Module) {
 
 	// Get information list of tax
-	// endpoint: localhost:9090/mini-api/tax/list
+	// endpoint: localhost:9090/web-personal/tax/list
 	// HTTP Method: GET
 	// example response:
 	// {
@@ -76,7 +76,7 @@ func RegisterRoutes(r *cRouter.MyRouter, mdle *Module) {
 	r.GET("/tax/list", mdle.ListTaxHandler)
 
 	// register user
-	// endpoint: localhost:9090/mini-api/user/register
+	// endpoint: localhost:9090/web-personal/user/register
 	// HTTP Method: POST
 	//	+-------------------------------------------------------------------+
 	// 	| Params	| type		| null	| Default	| Description			|
@@ -100,7 +100,7 @@ func RegisterRoutes(r *cRouter.MyRouter, mdle *Module) {
 	r.POST("/user/register", mdle.RegisterUserHandler)
 
 	// Get list of users
-	// endpoint: localhost:9090/mini-api/user/list
+	// endpoint: localhost:9090/web-personal/user/list
 	// HTTP Method: GET
 	// example response:
 	// {
@@ -133,7 +133,7 @@ func RegisterRoutes(r *cRouter.MyRouter, mdle *Module) {
 	r.GET("/user/list", mdle.GetListUserHandler)
 
 	// Register new product
-	// endpoint: localhost:9090/mini-api/product/register
+	// endpoint: localhost:9090/web-personal/product/register
 	// HTTP Method: POST
 	//	+-----------------------------------------------------------------------+
 	// 	| Params		| type		| null	| Default	| Description			|
@@ -164,7 +164,7 @@ func RegisterRoutes(r *cRouter.MyRouter, mdle *Module) {
 	r.POST("/product/register", mdle.RegisterProductHandler)
 
 	// Get list of products
-	// endpoint: localhost:9090/mini-api/product/list
+	// endpoint: localhost:9090/web-personal/product/list
 	// HTTP Method: GET
 	// example response:
 	// {
@@ -209,7 +209,7 @@ func RegisterRoutes(r *cRouter.MyRouter, mdle *Module) {
 	r.GET("/product/list", mdle.GetListProductHandler)
 
 	// Create transaction for user
-	// endpoint: localhost:9090/mini-api/transaction/create
+	// endpoint: localhost:9090/web-personal/transaction/create
 	// HTTP Method: POST
 	//	+---------------------------------------------------------------------------------------------------+
 	// 	| Params			| type		| null	| Default	| Description									|
@@ -283,7 +283,7 @@ func RegisterRoutes(r *cRouter.MyRouter, mdle *Module) {
 	// Get information of list transaction
 	// this is not spesific detail transaction
 	// just list of transaction
-	// endpoint: localhost:9090/mini-api/transaction/list
+	// endpoint: localhost:9090/web-personal/transaction/list
 	// HTTP Method: GET
 	// example response:
 	// {
@@ -316,7 +316,7 @@ func RegisterRoutes(r *cRouter.MyRouter, mdle *Module) {
 
 	// Get information of list detail transaction
 	// this is detail transaction by ID transaction
-	// endpoint: localhost:9090/mini-api/transaction/detail?id=[id_transaction]
+	// endpoint: localhost:9090/web-personal/transaction/detail?id=[id_transaction]
 	// id_transaction u can get from /transaction/list
 	// HTTP Method: GET
 	// example response:

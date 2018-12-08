@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
-	"github.com/bagusandrian/mini-api/src/db"
+	"github.com/bagusandrian/web-personal/src/db"
 	"github.com/jmoiron/sqlx"
 )
 

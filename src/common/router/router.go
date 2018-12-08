@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bagusandrian/mini-api/src/common"
-	"github.com/bagusandrian/mini-api/src/common/monitor"
+	"github.com/bagusandrian/web-personal/src/common"
+	"github.com/bagusandrian/web-personal/src/common/monitor"
 	"github.com/felixge/httpsnoop"
 	"github.com/julienschmidt/httprouter"
 	"github.com/opentracing/opentracing-go"
@@ -27,12 +27,16 @@ var HttpRouter *httprouter.Router
 
 func New() *MyRouter {
 	HttpRouter = httprouter.New()
-	myrouter := &MyRouter{Options: &Options{Prefix: "/mini-api", Timeout: 5}}
+	myrouter := &MyRouter{Options: &Options{Prefix: "/web-personal", Timeout: 5}}
 	myrouter.Httprouter = HttpRouter
 	return myrouter
 }
 
 type Handle func(http.ResponseWriter, *http.Request, httprouter.Params) *common.JSONResponse
+
+type HandleHTML func(http.ResponseWriter, *http.Request, httprouter.Params) *common.HTMLResponse
+
+type HandleFile func(http.ResponseWriter, *http.Request, httprouter.Params) *common.FileResponse
 
 func (mr *MyRouter) HEAD(path string, handle Handle) {
 	mr.Httprouter.HEAD(path, mr.handleNow(path, handle))
@@ -43,6 +47,15 @@ func (mr *MyRouter) GET(path string, handle Handle) {
 	mr.Httprouter.GET(fullPath, mr.handleNow(fullPath, handle))
 }
 
+func (mr *MyRouter) GETHTML(path string, handle HandleHTML) {
+	fullPath := mr.Options.Prefix + path
+	mr.Httprouter.GET(fullPath, mr.handleHTMLNow(fullPath, handle))
+}
+
+func (mr *MyRouter) GETFILE(path string, handle HandleFile) {
+	fullPath := mr.Options.Prefix + path
+	mr.Httprouter.GET(fullPath, mr.handleFileNow(fullPath, handle))
+}
 func (mr *MyRouter) POST(path string, handle Handle) {
 	fullPath := mr.Options.Prefix + path
 	mr.Httprouter.POST(fullPath, mr.handleNow(fullPath, handle))
@@ -106,6 +119,94 @@ func (mr *MyRouter) handleNow(fullPath string, handle Handle) httprouter.Handle 
 				span.LogFields(tlog.Object("log", resp.Log))
 				span.SetTag("httpCode", resp.StatusCode)
 				resp.Header.ProcessTime = time.Since(t).Seconds() * 1000
+				resp.SendResponse(w)
+			}
+			done <- true
+		}()
+		<-done
+		return
+	}
+}
+
+func (mr *MyRouter) handleHTMLNow(fullPath string, handle HandleHTML) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		t := time.Now()
+		ctx, cancel := context.WithTimeout(r.Context(), time.Second*time.Duration(mr.Options.Timeout))
+
+		defer cancel()
+
+		ctx = context.WithValue(ctx, "HTTPParams", ps)
+
+		span, ctx := opentracing.StartSpanFromContext(ctx, r.RequestURI)
+		defer span.Finish()
+
+		done := make(chan bool)
+
+		r.Header.Set("routePath", fullPath)
+		r = r.WithContext(ctx)
+
+		go func() {
+			select {
+			case <-ctx.Done():
+				if ctx.Err() == context.DeadlineExceeded {
+					w.WriteHeader(504)
+					w.Write([]byte("timeout")) //TODO: shoud be cusotm response
+					done <- true
+					return
+				}
+			}
+		}()
+
+		go func() {
+			resp := handle(w, r, ps)
+			if resp != nil {
+				span.LogFields(tlog.Object("log", resp.Log))
+				span.SetTag("httpCode", resp.StatusCode)
+				resp.Header.ProcessTime = time.Since(t).Seconds() * 1000
+				resp.SendResponse(w)
+			}
+			done <- true
+		}()
+		<-done
+		return
+	}
+}
+
+func (mr *MyRouter) handleFileNow(fullPath string, handle HandleFile) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		// t := time.Now()
+		ctx, cancel := context.WithTimeout(r.Context(), time.Second*time.Duration(mr.Options.Timeout))
+
+		defer cancel()
+
+		ctx = context.WithValue(ctx, "HTTPParams", ps)
+
+		span, ctx := opentracing.StartSpanFromContext(ctx, r.RequestURI)
+		defer span.Finish()
+
+		done := make(chan bool)
+
+		r.Header.Set("routePath", fullPath)
+		r = r.WithContext(ctx)
+
+		go func() {
+			select {
+			case <-ctx.Done():
+				if ctx.Err() == context.DeadlineExceeded {
+					w.WriteHeader(504)
+					w.Write([]byte("timeout")) //TODO: shoud be cusotm response
+					done <- true
+					return
+				}
+			}
+		}()
+
+		go func() {
+			resp := handle(w, r, ps)
+			if resp != nil {
+				// span.LogFields(tlog.Object("log", resp.Log))
+				// span.SetTag("httpCode", resp.StatusCode)
+				// resp.Header.ProcessTime = time.Since(t).Seconds() * 1000
 				resp.SendResponse(w)
 			}
 			done <- true

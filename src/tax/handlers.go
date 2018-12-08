@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bagusandrian/mini-api/src/common"
+	"github.com/bagusandrian/web-personal/src/common"
 	"github.com/julienschmidt/httprouter"
 )
 

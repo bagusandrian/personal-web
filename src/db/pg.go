@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/bagusandrian/mini-api/src/config"
+	"github.com/bagusandrian/web-personal/src/config"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -43,13 +43,13 @@ func Get(conn string) *sqlx.DB {
 			mtxDBMap.Unlock()
 			return dbMap[conn]
 		}
-		log.Println("[mini-api][db] dbMap connection:", conn, "disconnected. Creating new connection..", err)
+		log.Println("[web-personal][db] dbMap connection:", conn, "disconnected. Creating new connection..", err)
 	}
 	mtxDBMap.Unlock()
 
 	strConn := fmt.Sprint(reflect.ValueOf(conf.Database).FieldByName(conn))
 	if strConn == "" {
-		log.Println("[mini-api][db] no dbMap conn", conn)
+		log.Println("[web-personal][db] no dbMap conn", conn)
 		return nil
 	}
 

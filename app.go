@@ -5,12 +5,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bagusandrian/mini-api/src/common"
-	"github.com/bagusandrian/mini-api/src/common/monitor"
-	cRouter "github.com/bagusandrian/mini-api/src/common/router"
-	config "github.com/bagusandrian/mini-api/src/config"
-	"github.com/bagusandrian/mini-api/src/db"
-	"github.com/bagusandrian/mini-api/src/tax"
+	"github.com/bagusandrian/web-personal/src/common"
+	"github.com/bagusandrian/web-personal/src/common/monitor"
+	cRouter "github.com/bagusandrian/web-personal/src/common/router"
+	config "github.com/bagusandrian/web-personal/src/config"
+	"github.com/bagusandrian/web-personal/src/db"
+	// "github.com/bagusandrian/web-personal/src/tax"
 	"github.com/google/gops/agent"
 	"github.com/julienschmidt/httprouter"
 	grace "gopkg.in/tokopedia/grace.v1"
@@ -44,10 +44,16 @@ func main() {
 	go logging.StatsLog()
 
 	router := cRouter.New()
-	sMdle := tax.NewModule(conf)
-	tax.RegisterRoutes(router, sMdle)
+	// sMdle := tax.NewModule(conf)
+	// tax.RegisterRoutes(router, sMdle)
 
 	router.GET("/ping", ping)
+	router.GETHTML("/pinghtml", pingHTML)
+	router.GETFILE("/css/:filename", getCSS)
+	router.GETFILE("/js/:filename", getJS)
+	router.GETFILE("/fonts/:filename", getFont)
+	router.GETFILE("/img/:filename", getImage)
+	// router.GETFILE("/img/:path/:filename", getImageA)
 	tracer.Init(&tracer.Config{Port: conf.Server.TracerPort, Enabled: true})
 	log.Fatal(grace.Serve(":"+conf.Server.Port, router.WrapperHandler()))
 }
@@ -55,8 +61,57 @@ func main() {
 func ping(w http.ResponseWriter, r *http.Request, params httprouter.Params) (resp *common.JSONResponse) {
 	// this is just for check that service is running
 	resp = &common.JSONResponse{
-		Data:       "Welcome to Mini-API",
+		Data:       "Welcome to web-personal",
 		StatusCode: http.StatusOK,
+	}
+	return
+}
+
+func pingHTML(w http.ResponseWriter, r *http.Request, params httprouter.Params) (resp *common.HTMLResponse) {
+	resp = &common.HTMLResponse{
+		Data:       "Testing Wae",
+		StatusCode: http.StatusOK,
+	}
+	return
+}
+
+func getCSS(w http.ResponseWriter, r *http.Request, params httprouter.Params) (resp *common.FileResponse) {
+	// this is just for check that service is running
+	file := params.ByName("filename")
+	resp = &common.FileResponse{
+		Path: "css/",
+		File: file,
+		Type: "text/css",
+	}
+	return
+}
+func getJS(w http.ResponseWriter, r *http.Request, params httprouter.Params) (resp *common.FileResponse) {
+	// this is just for check that service is running
+	file := params.ByName("filename")
+	resp = &common.FileResponse{
+		Path: "js/",
+		File: file,
+		Type: "text/javascript",
+	}
+	return
+}
+func getFont(w http.ResponseWriter, r *http.Request, params httprouter.Params) (resp *common.FileResponse) {
+	// this is just for check that service is running
+	file := params.ByName("filename")
+	resp = &common.FileResponse{
+		Path: "fonts/",
+		File: file,
+		Type: "text/plain",
+	}
+	return
+}
+func getImage(w http.ResponseWriter, r *http.Request, params httprouter.Params) (resp *common.FileResponse) {
+	// this is just for check that service is running
+	file := params.ByName("filename")
+	resp = &common.FileResponse{
+		Path: "img/",
+		File: file,
+		Type: "image/jpg",
 	}
 	return
 }

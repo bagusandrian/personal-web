@@ -2,8 +2,11 @@ package common
 
 import (
 	"encoding/json"
+	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 type JSONRespHeader struct {
@@ -23,6 +26,19 @@ type JSONResponse struct {
 	Message string `jsong:"message"` // for backward compability with current codes in staging
 	Log     string `json:"-"`
 }
+type HTMLResponse struct {
+	Header      JSONRespHeader `json:"header"`
+	FileHTML    string         `json:"file"`
+	Data        interface{}    `json:"data"`
+	StatusCode  int            `json:"-"` // HTTP Status Code
+	ErrorString string         `json:"error,omitempty"`
+	Log         string         `json:"-"`
+}
+type FileResponse struct {
+	Path string `json:path"`
+	Type string `json:"type"`
+	File string `json:"file"`
+}
 
 func (r *JSONResponse) SendResponse(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
@@ -38,4 +54,38 @@ func (r *JSONResponse) SendResponse(w http.ResponseWriter) {
 		w.WriteHeader(r.StatusCode)
 	}
 	w.Write(encoded)
+}
+
+func (r *HTMLResponse) SendResponse(w http.ResponseWriter) {
+	now := time.Now()
+	tmpl := template.Must(template.ParseFiles("files/var/www/index.html"))
+	data := r.Data
+	tmpl.Execute(w, data)
+	log.Printf("process time %+v\n", time.Since(now))
+}
+
+func (r *FileResponse) SendResponse(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", r.Type)
+	content := []byte{}
+	var err error
+	pathFolder := []string{
+		"files/var/www/",
+		"/files/var/www/",
+		"./files/var/www/",
+		"../files/var/www/",
+		"../../files/var/www/",
+		"../../../files/var/www/",
+	}
+	s := ""
+	for _, p := range pathFolder {
+		content, err = ioutil.ReadFile(p + r.Path + r.File)
+		s = p
+		if err == nil {
+			break
+		}
+	}
+	if err != nil {
+		log.Printf("error get file %s%s%s err: %+v\n", s, r.Path, r.File, err)
+	}
+	w.Write(content)
 }

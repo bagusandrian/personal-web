@@ -29,10 +29,10 @@ type (
 // FilePathList list of possible config file relative path to binary location
 func FilePathList() []string {
 	return []string{
-		"/etc/mini-api/",
-		"./files/etc/mini-api/",
-		"../../files/etc/mini-api/",
-		"../../../files/etc/mini-api/",
+		"/etc/web-personal/",
+		"./files/etc/web-personal/",
+		"../../files/etc/web-personal/",
+		"../../../files/etc/web-personal/",
 	}
 }
 
@@ -52,7 +52,7 @@ func ReadConfig() *Config {
 	path := FilePathList()
 
 	for _, val := range path {
-		file := fmt.Sprintf("%smini-api.%s.ini", val, environ)
+		file := fmt.Sprintf("%sweb-personal.%s.ini", val, environ)
 		log.Printf("%s\n", file)
 		err := gcfg.ReadFileInto(&cfg, file)
 		if err == nil {
@@ -61,10 +61,10 @@ func ReadConfig() *Config {
 	}
 
 	if err != nil {
-		log.Fatalf("[mini-api] Cannot load config env:%s :%+v\n ", environ, err)
+		log.Fatalf("[web-personal] Cannot load config env:%s :%+v\n ", environ, err)
 	}
 
-	log.Printf("[mini-api] Config load success, using \"%s\".\n", environ)
+	log.Printf("[web-personal] Config load success, using \"%s\".\n", environ)
 	cfg.Environment = environ
 
 	return &cfg

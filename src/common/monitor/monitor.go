@@ -2,7 +2,7 @@ package monitor
 
 import (
 	"fmt"
-	"github.com/bagusandrian/mini-api/src/config"
+	"github.com/bagusandrian/web-personal/src/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"log"
 	"time"
